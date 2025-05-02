@@ -35,7 +35,7 @@ class DataReader():
         self.titleData = []
         for idx in range(8):
             self.titleData.append(str(workbook.cell(row=titleRow+idx, column=titleCol).value))
-        # self.titleData[7] = self.format_date(self.titleData[7])
+        self.titleData[7] = self.format_date(self.titleData[7])
         
         return (self.titleData, self.defaultName)
 
