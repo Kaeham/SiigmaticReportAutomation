@@ -1,7 +1,7 @@
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
-from DataReading import DataReader
+from src.DataReading import DataReader
 import os
 import sys
 from NRatingFinder import *
@@ -10,16 +10,17 @@ from Appendix import start_all
 from tkinter import Tk, filedialog
 import datetime
 
-print(os.getcwd())
 class ReportGenerator():
-    def __init__(self, file):
+    def __init__(self):
         """
         Inputs:
             - file: the excel file containing all the data
         """
+        Tk().withdraw()
+        file = filedialog.askopenfilename(title="Select Excel File")
         self.reader = DataReader(file)
         self.data = self.reader.get_data()
-        # print(self.data)
+
         # Data variables
         self.bodyData = self.data[0] # 1 row
         self.deflectionData = self.data[1] # requires len*2 rows
@@ -602,7 +603,7 @@ class ReportGenerator():
         format_text(table.cell(0, 1).paragraphs[0].add_run("Observations"), 12, bold_status=True)
 
         # Add Data
-        waterVal, waterComments, modDetails = self.waterData
+        waterVal, waterComments = self.waterData
         # if modDetails in [None, ""]:
         #     modDetails = "N/A"
         table.cell(1, 0).text = str(waterVal)
@@ -611,11 +612,7 @@ class ReportGenerator():
         # table.cell(1, 2).text = modDetails
         format_table_width(table.cell(1, 0), 2)
         format_table_width(table.cell(1, 1), 10)
-
-        # format table
-        # row 0
-        # for cell in table.cells.rows[0]:
-        #     format_text(cell.paragraphs[0].runs[0], 12, bold_status=True)
+        
         for cell in table.rows[1].cells:
             format_text(cell.paragraphs[0].runs[0], 12)
         
@@ -739,34 +736,30 @@ class ReportGenerator():
         """
         return self.document
 
+    def print_errors(self):
+        """
+        print all errors if they exist, typically used when saving the report
+        """
+        if len(self.errors):
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            filename = f"error_log_{timestamp}.txt"
 
+            with open(filename, "w") as errorFile:
+                errorFile.write("ERROR LOG\n\n")
+                for error in self.errors:
+                    errorFile.write(error + "\n")
+            
+            print(f"Errors detected! See log: {errorFile}")
 
-Tk().withdraw()  # Hide the root window
-file = filedialog.askopenfilename(title="Select Excel File")
-report = ReportGenerator(file)
-new = report.get_report()
-errors = report.errors
-
-save_path = filedialog.asksaveasfilename(defaultextension=".docx", filetypes=[("Word Documents", "*.docx")], initialfile=f"{report.filename}.docx", title="Save Report As")
-
-
-if save_path:
-    new.save(save_path)
-    print(f"File saved at: {save_path}")
-else:
-    print("No file location selected. File not saved.")
-
-if len(errors):
-    # Generate timestamp for unique filenames
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    error_filename = f"error_log_{timestamp}.txt"
-
-    # Save error messages to file
-    with open(error_filename, "w") as error_file:
-        error_file.write("ERROR LOG\n\n")
-        for error in errors:
-            error_file.write(error + "\n")
-
-    print(f"Errors detected! See log: {error_filename}")
-
-# input("\nPress Enter to exit")
+    def save_report(self):
+        """
+        Save the report
+        """
+        Tk().withdraw()
+        savePath = filedialog.asksaveasfilename(defaultextension=".docx", filetypes=[("Word Documents", "*.docx")], initialfile=f"{self.filename}.docx", title="Save Report As")
+        if savePath:
+            self.get_report().save(savePath)
+            print(f"File saved at: {savePath}")
+        else:
+            print("No file location selected. File not saved.")
+        self.print_errors()
