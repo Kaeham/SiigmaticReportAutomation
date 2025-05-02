@@ -47,6 +47,7 @@ class DataReader():
         :Outputs:
             - final: date in the format DDMMYYYY
         """
+        print(date)
         if date != None and date.lower() != "None".lower():
             res = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
             final = res.strftime("%d-%m-%Y")
@@ -410,6 +411,12 @@ class DataReader():
         """
         return self.final
 
+    def get_workbook(self):
+        """
+        return the workbook that data is being extracted from
+        """
+        return self.workbook
+    
     # Validation with GPT
     def check_with_gpt(self, array_of_values):
         title = array_of_values[0]
