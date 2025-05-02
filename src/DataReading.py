@@ -14,7 +14,6 @@ class DataReader():
         self.get_water_data(self.workbook)
         self.get_ultimate_data(self.workbook)
         self.final = self.titleData, self.deflectionData, self.oFData, self.AIData, self.waterData, self.ultimateData, self.deflectionVal, self.defaultName
-        # print(self.final)
 
     # Title Data
     def get_title_data(self, workbook):
@@ -47,11 +46,14 @@ class DataReader():
         :Outputs:
             - final: date in the format DDMMYYYY
         """
-        print(date)
-        if date != None and date.lower() != "None".lower():
+        # if date in [None, "none", '0']:
+        #     return "N/A"
+        try:
             res = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
             final = res.strftime("%d-%m-%Y")
             return final
+        except ValueError:
+            return "N/A"
 
         # Serviceablity Design Wind Pressure
     
@@ -62,9 +64,14 @@ class DataReader():
         Inputs:
             - workbook: the excel file where the data is stored
         Outputs:
-            - serviceability design wind pressure
+            - Serviceability Wind Pressure: if the value is a number, returns the value otherwise returns N/A
         """
-        return workbook.cell(row=15, column=3).value
+        serviceability = workbook.cell(row=14, column=3).value
+        try:
+            serviceability = int(serviceability)
+            return str(serviceability)
+        except:
+            return "N/A"
 
     # Deflection data
     def get_deflection_data(self, workbook):
@@ -90,16 +97,18 @@ class DataReader():
 
         for member in posMembers:
             name, row, col = member
-            posRes = self.extract_deflection_data(workbook, (row, col))
+            posRes = self.confirm_deflection_data(workbook, (row+8, col+4))
             self.deflectionData.append((name, posRes, "placeholder"))
         
         for member in negMembers:
             name, row, col = member # get member details
             idx = self.check_name_included(self.deflectionData, name) # get index of the member in the array
-            negRes = self.extract_deflection_data(workbook, (row, col))
+            negRes = self.confirm_deflection_data(workbook, (row+8, col+4))
             curName, posRes, placeholder = self.deflectionData[idx]
             self.deflectionData[idx] = (curName, posRes, negRes)
-            print((curName, posRes, negRes))
+            # print((curName, posRes, negRes))
+        
+        return self.deflectionData
 
     def get_all_members(self, workbook, start):
         """
@@ -113,7 +122,7 @@ class DataReader():
         # initialize starting name values
         curRow, curCol = start
         arrayOfNames = []
-        defaultValues = ["", None, "x sash (01)", "x sash(01)", "X Sash"]
+        defaultValues = ["", None, "x sash (01)", "x sash(01)", "x sash"]
         while curRow <= 1048576:
             currentName = workbook.cell(row=curRow, column=curCol).value
             if type(currentName) == str:
@@ -141,23 +150,9 @@ class DataReader():
         """
         length = len(array_of_names)
         for idx in range(length):
-            name, row, col = array_of_names[idx]
-            if name == value:
+            if array_of_names[idx][0] == value:
                 return idx
         return False
-
-    def extract_deflection_data(self, workbook, coords):
-        """
-        gets the deflection data at the specified coordinates
-        Inputs:
-            - workbook: the excel file where the data is stored
-            - coords: row, cell pair where the data is located
-        Outputs:
-            - value at coords in the workbook. 
-        """
-        curRow, curCol = coords
-        # print(workbook, (curRow+8, curCol+4))
-        return self.confirm_deflection_data(workbook, (curRow+8, curCol+4))
 
     def confirm_deflection_data(self, workbook, coords):
         """
@@ -178,15 +173,9 @@ class DataReader():
                 return "N/A"  # Return "N/A" if invalid data is found
         if type(val) in [int, float]:
             val = "{:.0f}".format(val)
+            return val
         else:
             return "N/A"
-        
-        # span = workbook.cell(row=defRow+7, column=col).value
-        # spanRatio = workbook.cell(row=defRow+13, column=col-1).value
-        # if type(spanRatio) in [int, float]:
-        #     spanRatio = "{:.0f}".format(spanRatio)
-
-        # return spanRatio
 
     # Operation Force (for each specimen)
     def get_operational_force(self, workbook):
@@ -200,7 +189,7 @@ class DataReader():
                     the second tuple contains the initiating and maintaining force for closing
         """
         self.oFData = ((0, 0), (0, 0))
-        oFData = [(9, 14), (15, 14)]
+        oFData = [(10, 14), (16, 14)]
         oFRow, oFCol = oFData[0]
         oFSecondRow, _ = oFData[1]
 
@@ -212,9 +201,7 @@ class DataReader():
             valFour = workbook.cell(row=oFSecondRow, column=oFCol+1).value
 
             if all(val in ["", None, 0] for val in [valOne, valTwo, valThree, valFour]):
-                print()
                 return self.oFData
-            # print([valOne, valTwo, valThree, valFour])
             if all(isinstance(val, (int, float)) for val in [valOne, valTwo, valThree, valFour]):
                 self.oFData = (("{:.1f}".format(valOne), "{:.1f}".format(valTwo)), ("{:.1f}".format(valThree), "{:.1f}".format(valFour)))
             else:
@@ -237,24 +224,20 @@ class DataReader():
         start = (17, 20)
         notDefault = True
         aIRow, aICol = start
-        self.AIData = ("N/A", "N/A")
+        self.AIData = ('', '')
         while notDefault:
             posVal = workbook.cell(row=aIRow, column=aICol).value
             negVal = workbook.cell(row=aIRow+1, column=aICol).value
-            if (posVal in ["", 0, None]):
+            if (posVal in ["", 0, None, '#DIV/0!']):
                 notDefault = False
             else:
                 if isinstance(posVal, (int, float)):
                     posVal = "{:.2f}".format(posVal)          
-                    if isinstance(negVal, (int, float)):
+                    if negVal != 0 and isinstance(negVal, (int, float)):
                         negVal = "{:.2f}".format(negVal)
                     else:
-                        negVal = 0
-                else:
-                    posVal = "N/A"
-                    negVal = 0
+                        negVal = 'N/A'
                 self.AIData = (posVal, negVal)
-                
             aIRow += 18
         return self.AIData
 
@@ -268,10 +251,9 @@ class DataReader():
             - extractedData: (water measured value, comments about test, modification details)
         """
         # Initial positions
-        positions = [(3, 23), (33, 22), (5, 23)]  # (water value, modifications, comments)
+        positions = [(3, 23), (5, 23)]  # (water value, comments)
         waterRow, waterCol = positions[0]
-        modRow, modCol = positions[1]
-        commentsRow, commentsCol = positions[2]
+        commentsRow, commentsCol = positions[1]
         sectionRow = commentsRow + 13
         self.waterData = False
 
@@ -284,10 +266,6 @@ class DataReader():
         while waterRow <= 1048576:
             # print(waterRow, modRow, commentsRow)
             waterValue = workbook.cell(row=waterRow, column=waterCol).value
-            if loopIdx > 0:
-                modVal = workbook.cell(row=modRow, column=modCol).value
-            else:
-                modVal = ""
             waterComments = ""
             validTest = False
             secOne = False
@@ -326,7 +304,6 @@ class DataReader():
             
             if secTwo and secOne:
                 validTest = True
-                # print(waterRow, modRow, commentsRow)
             
             for rows in range(11):
                 val = workbook.cell(row=commentsRow+rows, column=commentsCol).value
@@ -334,26 +311,23 @@ class DataReader():
                     waterComments += val + "\n"
                     if "passed" in val.lower():
                         validTest = True
+            if not waterComments:
+                waterComments = "N/A"
             if waterValue in [None, ""]:
                 if self.waterData:
                     return self.waterData
                 else:
-                    return "N/A"
+                    return (0, "N/A")
             elif validTest:
                 # print(waterValue, modVal, waterComments, validTest)
                 # print(isinstance(waterValue, (int, float)), isinstance(modVal, str), isinstance(waterComments, str))
                 if isinstance(waterValue, (int, float)):
                     waterValue = "{:.0f}".format(waterValue)
-                    if isinstance(waterComments, str):
-                        if isinstance(modVal, str):
-                            self.waterData = (waterValue, waterComments, modVal)
-                        else:
-                            self.waterData = (waterValue, waterComments, "N/A")
-                    else:
-                        self.waterData = (waterValue, "N/A", "N/A")
+                    self.waterData = (waterValue, waterComments)
+                else:
+                    self.waterData = (waterValue, "N/A")
 
             if loopIdx > 0:
-                modRow += 41
                 waterRow += 41
                 commentsRow += 41
             else:
@@ -393,9 +367,7 @@ class DataReader():
                 self.ultimateData = ("{:.0f}".format(posTestVal), "{:.0f}".format(negTestVal), obsvTable)
             else:
                 return self.ultimateData
-            
-            # modify rows and columns for the next iteration
-            # first iteration, hence slightly different modificaitons
+
             fRow += 19
             obsvRow += 19
         
