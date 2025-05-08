@@ -1,5 +1,5 @@
 from docx import Document
-from src.FormattingFunctions import *
+from src.utils.Formatter import *
 
 # Run all functions to create the appendix
 def start_all(doc: Document):

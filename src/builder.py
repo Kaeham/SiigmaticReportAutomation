@@ -22,7 +22,7 @@ class DocumentBuilder:
         AirInfiltration.write(self.doc, self.data)
         Water.write(self.doc, self.data)
         UltimateStrength.write(self.doc, self.data)
-        Appendix.write(self.doc)
+        Appendix.start_all(self.doc)
     
     def save(self):
         path = get_save_path(self.data.filename)
