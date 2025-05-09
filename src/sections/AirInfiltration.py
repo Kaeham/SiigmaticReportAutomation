@@ -2,7 +2,7 @@
 from src.utils.Formatter import format_text, format_paragraph_spacing, format_cell_color, insert_line_break
 from src.utils.Constants import DEFAULT_CELL_COLOR
 
-def write(doc, data):
+def write(doc, data, ai=[]):
     """
     Renders the Air Infiltration section.
     :param doc: python-docx Document
@@ -10,7 +10,7 @@ def write(doc, data):
     """
     _add_heading(doc)
     _add_results_table(doc, data.air_data)
-    _add_compliance(doc, data.air_data)
+    _add_compliance(doc, data.air_data, ai)
     doc.add_page_break()
 
 
@@ -47,7 +47,7 @@ def _add_results_table(doc, air_data):
                 format_text(table.cell(r, c).paragraphs[0].runs[0], 12)
 
 
-def _add_compliance(doc, air_data):
+def _add_compliance(doc, air_data, ai):
     para = doc.add_paragraph()
     posVal, negVal = map(lambda x: float(x) if x not in ["NR", "N/A"] else 0.0, air_data)
 
@@ -60,5 +60,11 @@ def _add_compliance(doc, air_data):
 
     format_text(para.add_run("Compliance\n"), 12, bold_status=True)
     format_text(para.add_run(f"The test specimen satisfied the “{rating}” Air Infiltration Level requirements of AS2047 Clause 2.3.1.5\n"), 12)
-    format_text(para.add_run("\nComment: Nil\n"), 12)
+    format_text(para.add_run("\nComment:"), 12)
+    if ai:
+        ai = ai if isinstance(ai, list) else [ai]
+        for comment in ai:
+            format_text(para.add_run(f"\n{comment}"), 12)
+    else:
+        format_text(para.add_run(" Nil\n"), 12)
     insert_line_break(para)

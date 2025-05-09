@@ -1,7 +1,7 @@
 from src.utils.Formatter import format_text, format_paragraph_spacing, insert_line_break, format_cell_color
 from src.utils.Constants import DEFAULT_CELL_COLOR
 
-def write(doc, data):
+def write(doc, data, ai=[]):
     """
     Renders the deflection section of the report
     """
@@ -10,7 +10,7 @@ def write(doc, data):
     for name, pos, neg in data.deflections:
         _add_sash_table(doc, name, pos, neg, data.deflection_val)
     
-    _add_compliance_text(doc)
+    _add_compliance_text(doc, ai)
     doc.add_page_break()
 
 def _add_heading(doc):
@@ -52,12 +52,18 @@ def _add_sash_table(doc, sash_name, pos, neg, pressure):
     
     doc.add_paragraph()
 
-def _add_compliance_text(doc):
+def _add_compliance_text(doc, ai):
     """
     """
     format_text(doc.add_paragraph().add_run("(See sash numbering in Appendix: Elevation drawing)\n"), 12, italicize=True)
     para = doc.add_paragraph()
     format_text(para.add_run("\nCompliance\n"), 12, bold_status=True)
     format_text(para.add_run("The test specimen satisfied the deflection requirements of AS2047 Clause 2.3.1.3 at the specified pressure.\n"), 12)
-    format_text(para.add_run("\nComment: Nil"), 12)
+    format_text(para.add_run("\nComment:"), 12)
+    if ai:
+        ai = ai if isinstance(ai, list) else [ai]
+        for comment in ai:
+            format_text(para.add_run(f"\n{comment}"), 12)
+    else:
+        format_text(para.add_run(" Nil"), 12)
     insert_line_break(para)

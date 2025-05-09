@@ -11,17 +11,24 @@ class DocumentBuilder:
         self.doc = Document()
         self.errors = []
     
-    def build_all_sections(self):
+    def build_all_sections(self, ai=[]):
         """
         Builds all the different sections of the reports using data
         """
+        defAi = oFAi = aIAi = waterAi = ultimateAi = []
+        if ai != []:
+            defAi = ai[0]
+            oFAi = ai[1]
+            aIAi = ai[2]
+            waterAi = ai[3]
+            ultimateAi = ai[4]
         TitlePage.write(self.doc, self.data)
         Summary.write(self.doc, self.data, self.errors)
-        Deflection.write(self.doc, self.data)
-        OperationForce.write(self.doc, self.data)
-        AirInfiltration.write(self.doc, self.data)
-        Water.write(self.doc, self.data)
-        UltimateStrength.write(self.doc, self.data)
+        Deflection.write(self.doc, self.data, defAi)
+        OperationForce.write(self.doc, self.data, oFAi)
+        AirInfiltration.write(self.doc, self.data, aIAi)
+        Water.write(self.doc, self.data, waterAi)
+        UltimateStrength.write(self.doc, self.data, ultimateAi)
         Appendix.start_all(self.doc)
     
     def save(self):

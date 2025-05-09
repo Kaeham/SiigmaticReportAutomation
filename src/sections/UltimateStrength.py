@@ -2,7 +2,7 @@
 from src.utils.Formatter import format_text, format_table_width, format_cell_color, insert_line_break
 from src.utils.Constants import DEFAULT_CELL_COLOR
 
-def write(doc, data):
+def write(doc, data, ai):
     """
     Renders the Ultimate Strength Test section.
     :param doc: python-docx Document
@@ -11,7 +11,7 @@ def write(doc, data):
     _add_heading(doc)
     _add_pressures_table(doc, data.ultimate)
     _add_observations_table(doc, data.ultimate[2])
-    _add_compliance(doc)
+    _add_compliance(doc, ai)
     doc.add_page_break()
 
 
@@ -76,9 +76,16 @@ def _add_observations_table(doc, obs_data):
         format_text(row.cells[0].paragraphs[0].runs[0], 9)
     
 
-def _add_compliance(doc):
+def _add_compliance(doc, ai):
     para = doc.add_paragraph()
     format_text(para.add_run("\nCompliance\n"), 12, bold_status=True)
     format_text(para.add_run("The specimen satisfied Ultimate Strength requirements per AS2047 Clause 2.3.1.7.\n"), 12)
-    format_text(para.add_run("\nComment: Nil"), 12)
+    format_text(para.add_run("\nComment:"), 12)
+    print(f"ultimate: {ai}")
+    if ai:
+        ai = ai if isinstance(ai, list) else [ai]
+        for comment in ai:
+            format_text(para.add_run(f"\n{comment}"), 12)
+    else:
+        format_text(para.add_run(" Nil\n"), 12)
     insert_line_break(para)
