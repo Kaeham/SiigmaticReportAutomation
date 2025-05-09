@@ -41,7 +41,6 @@ def _add_compliance(doc, pressure, ai):
     format_text(para.add_run("\nCompliance\n"), 12, bold_status=True)
     format_text(para.add_run(f"The specimen satisfied water penetration requirements of AS2047 Clause 2.3.1.6 at {pressure}Pa.\n"), 12)
     format_text(para.add_run("\nComment:"), 12)
-    print(ai)
     if ai:
         ai = ai if isinstance(ai, list) else [ai]
         for comment in ai:

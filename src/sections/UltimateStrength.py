@@ -81,7 +81,6 @@ def _add_compliance(doc, ai):
     format_text(para.add_run("\nCompliance\n"), 12, bold_status=True)
     format_text(para.add_run("The specimen satisfied Ultimate Strength requirements per AS2047 Clause 2.3.1.7.\n"), 12)
     format_text(para.add_run("\nComment:"), 12)
-    print(f"ultimate: {ai}")
     if ai:
         ai = ai if isinstance(ai, list) else [ai]
         for comment in ai:

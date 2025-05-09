@@ -62,7 +62,6 @@ class AIAnalysis:
         self.selectedItems[section_idx] = "\n".join(filter(None, local_state))
 
     def _on_finish(self):
-        print(self.selectedItems)
         self.mainFrame.setCurrentIndex(0)
 
     def get_window(self):
