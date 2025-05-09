@@ -6,3 +6,4 @@ data/
 .env
 main.py
 archive/
+.coverage
