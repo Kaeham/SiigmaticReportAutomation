@@ -5,16 +5,16 @@ def extract_deflection_data(ws):
 
     for name, r, c in pos:
         posVal = validate_sensor(ws, r+8, c+4)
-        result.append((name, posVal, "placeholder"))
+
+        if posVal != "N/A":
+            result.append((name, posVal, "N/A")) 
 
     for name, r, c in neg:
         idx = match_member_by_name(result, name)
         negVal = validate_sensor(ws, r+8, c+4)
-        if idx > -1:
+        if idx > -1 and negVal != "N/A":
             name, posVal, _ = result[idx]
             result[idx] = (name, posVal, negVal)
-        else:
-            result.append((name, "N/A", negVal))
 
     return result
 
@@ -23,7 +23,8 @@ def validate_sensor(ws, row, col):
     """
     val = ws.cell(row=row, column=col).value
     for i in range(1, 4):
-        if ws.cell(row=row, column= col -(i*2)).value == 0:
+        sensorRead = ws.cell(row=row, column= col -(i)).value
+        if  sensorRead == 0 or sensorRead == None:
             return "N/A"
     return "{:.0f}".format(val) if isinstance(val, (int, float)) else "N/A"
 
@@ -39,7 +40,7 @@ def get_all_members(ws, start):
         name = ws.cell(row=row, column=col).value
         name = str(name).lower() if isinstance(name, str) else ""
         if name in defaultNames:
-            default = True
+            break
         idx = match_member_by_name(names, name)
         if idx > -1:
             names[idx] = (name, row, col)

@@ -8,8 +8,9 @@ def extract_air_data(ws):
         neg = ws.cell(row=row+1, column=col).value
         if pos in ["", 0, None, '#DIV/0!']:
             break
-
+        
+        pos = format_decimal(pos, 2) if isinstance(pos, (float, int)) and pos != 0 else "N/A"
         neg = format_decimal(neg, 2) if isinstance(neg, (float, int)) and neg != 0 else "N/A"
-        latest = (format_decimal(pos, 2), neg)
+        latest = (pos, neg)
         row += 18
     return latest

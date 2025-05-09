@@ -23,7 +23,10 @@ def extract_water_data(ws):
         waterComments = _gather_comments(ws, commentsRow, col)
         validTest = _check_section_pass(ws, sectionRow, col) or ("passed" in waterComments.lower() if waterComments else False)
         
-        if waterValue in [None, ""]:
+        if not is_int(waterValue):
+            waterValue = "N/A"
+
+        if waterValue in [None, "", "N/A"]:
             return waterData if waterData else ("0", "N/A")
         
         if validTest:
@@ -59,7 +62,17 @@ def _check_section_pass(ws, start_row, col):
     except:
         return False
     
+    if any(is_int(val) or val==None for val in [sec1a, sec1b] + sec2):
+        return False
+    
     secOnePass = (sec1a == "Y" and sec1b =="Y") or sec1a != "Y"
     secTwoPass = all(val != "N" for val in sec2)
 
     return secOnePass and secTwoPass
+
+def is_int(val):
+    try:
+        int(val)
+        return True
+    except:
+        return False
