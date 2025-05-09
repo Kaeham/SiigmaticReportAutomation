@@ -7,4 +7,3 @@ data/
 main.py
 archive/
 .coverage
-src/gui/
