@@ -28,12 +28,18 @@ def n_rating_air_results(posAir, negAir):
     """
     get the air infiltration levels of the specimen
     """
-    if float(posAir) <= 1:
-        if float(negAir) <= 1:
+    try: posAir = float(posAir)
+    except: return ("", "")
+    try: negAir = float(negAir) 
+    except: return ("", "")
+
+    if posAir <= 1:
+        if negAir <= 1:
             return "Low Air Infiltration"
-    elif float(posAir) <= 5:
+    elif posAir <= 5:
         return "High Air Infiltration"
-    return None
+    
+    return ("", "")
 
 def n_rating_water(water_val):
     """
@@ -43,14 +49,18 @@ def n_rating_water(water_val):
     exposed = [(600, "N6, C4"),  (450, "N5, C3"), (300, "N4, C2"), (200, "N1, N2")]
     nonExposedRating = None
     exposedRating = None
+    try:
+        water_val = float(water_val)
+    except:
+        return ("", "")
 
     for idx in range(len(nonExposed)):
         exposedNValue, exposedNRating = exposed[idx]
-        if float(water_val) >= exposedNValue and exposedRating == None:
+        if water_val >= exposedNValue and exposedRating == None:
             exposedRating = exposedNRating + " (Exposed)"
         
         nonExposedNValue, nonExposedNRating = nonExposed[idx]
-        if float(water_val) >= nonExposedNValue and nonExposedRating == None:
+        if water_val >= nonExposedNValue and nonExposedRating == None:
             nonExposedRating = nonExposedNRating + " (Non-Exposed)"
     
     return (exposedRating, nonExposedRating)
@@ -69,7 +79,10 @@ def n_rating_ust(ultimate_value):
               (4000, "N4, C2"), (3000, "N4, C1"), (2700, "N3, C1"), (2000, "N3"), (1300, "N2"), (900, "N1")]
     genRating = None
     cornRating = None
-    ultimate_value = float(ultimate_value)
+    try:
+        ultimate_value = float(ultimate_value)
+    except:
+        return ("", "")
 
     for idx in range(len(general)):
         genNValue, genNRating = general[idx]
