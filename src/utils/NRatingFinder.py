@@ -24,12 +24,6 @@ def n_rating_serviceability(deflection_value):
         
     return (finalGenRating, finalCornerRating)
 
-
-# # TODO
-# Operating force doesnt require N Rating? just pass and fail?
-# def n_rating_operating_force(door_type, init_force, maint_force):
-#     if door_type == ""
-
 def n_rating_air_results(posAir, negAir):
     """
     get the air infiltration levels of the specimen
